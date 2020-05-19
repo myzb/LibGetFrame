@@ -73,6 +73,10 @@ local FrameToUnitFresh = {}
 local FrameToUnit = {}
 local UpdatedFrames = {}
 
+local function exact_match(a, b)
+    return (a:match(b) == a)
+end
+
 local function ScanFrames(depth, frame, ...)
     if not frame then return end
     if depth < maxDepth
@@ -131,7 +135,7 @@ end
 
 local function isFrameFiltered(name, ignoredFrames)
     for _, filter in pairs(ignoredFrames) do
-        if name:find(filter) then
+        if exact_match(name, filter) then
             return true
         end
     end
@@ -140,7 +144,7 @@ end
 
 local function GetUnitFrames(target, ignoredFrames)
     if not UnitExists(target) then
-        if type(target) == "string" and target:find("Player") then
+        if type(target) == "string" and exact_match(target ,"Player") then
             target = select(6, GetPlayerInfoByGUID(target))
         else
             target = target:gsub(" .*", "")
@@ -164,7 +168,7 @@ local function GetUnitFrames(target, ignoredFrames)
 end
 
 local function ElvuiWorkaround(frame)
-    if IsAddOnLoaded("ElvUI") and frame and frame:GetName():find("^ElvUF_") and frame.Health then
+    if IsAddOnLoaded("ElvUI") and frame and exact_match(frame:GetName(), "^ElvUF_") and frame.Health then
         return frame.Health
     else
         return frame
@@ -228,7 +232,7 @@ function lib.GetUnitFrame(target, opt)
     if not opt.returnAll then
         for i = 1, #opt.framePriorities do
             for frame, frameName in pairs(frames) do
-                if frameName:find(opt.framePriorities[i]) then
+                if exact_match(frameName, opt.framePriorities[i]) then
                     return ElvuiWorkaround(frame)
                 end
             end
